@@ -1,5 +1,6 @@
 package com.medzin.board_game_collector.database
 
+import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import com.medzin.board_game_collector.database.objects.Person
 import com.medzin.board_game_collector.util.PersonParser
@@ -22,6 +23,20 @@ class DesignerDBHelper {
 
         fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
             TODO("Not yet implemented")
+        }
+
+        fun addDesigner(gameId: Int, designers: MutableList<Person>?, db: SQLiteDatabase){
+            val values = ContentValues()
+            values.put(COLUMN_GAME_ID, gameId)
+            values.put(COLUMN_DESIGNERS_LIST, PersonParser.stringifyPersonList(designers))
+            db.insert(TABLE_DESIGNERS, null, values)
+        }
+
+        fun updateDesigner(gameId: Int, designers: MutableList<Person>?, db: SQLiteDatabase){
+            val values = ContentValues()
+            values.put(COLUMN_GAME_ID, gameId)
+            values.put(COLUMN_DESIGNERS_LIST, PersonParser.stringifyPersonList(designers))
+            db.update(TABLE_DESIGNERS, values, "$COLUMN_GAME_ID=?", arrayOf(gameId.toString()));
         }
 
         fun findDesigners(gameId: Int, db: SQLiteDatabase): MutableList<Person> {

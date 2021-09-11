@@ -1,11 +1,12 @@
 package com.medzin.board_game_collector.database
 
+import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import com.medzin.board_game_collector.database.objects.Person
 import com.medzin.board_game_collector.util.PersonParser
 
 class ArtistDBHelper {
-
+//TODO("remove column_id - redundant")
     companion object {
         val TABLE_ARTISTS = "artists"
         val COLUMN_ID = "id"
@@ -22,6 +23,20 @@ class ArtistDBHelper {
 
         fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
             TODO("Not yet implemented")
+        }
+
+        fun addArtist(gameId: Int, artists: MutableList<Person>?, db: SQLiteDatabase){
+            val values = ContentValues()
+            values.put(COLUMN_GAME_ID, gameId)
+            values.put(COLUMN_ARTISTS_LIST, PersonParser.stringifyPersonList(artists))
+            db.insert(TABLE_ARTISTS, null, values)
+        }
+
+        fun updateArtist(gameId: Int, artists: MutableList<Person>?, db: SQLiteDatabase){
+            val values = ContentValues()
+            values.put(COLUMN_GAME_ID, gameId)
+            values.put(COLUMN_ARTISTS_LIST, PersonParser.stringifyPersonList(artists))
+            db.update(TABLE_ARTISTS, values, "$COLUMN_GAME_ID=?", arrayOf(gameId.toString()))
         }
 
         fun findArtists(gameId: Int, db: SQLiteDatabase): MutableList<Person> {

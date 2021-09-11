@@ -1,10 +1,10 @@
 package com.medzin.board_game_collector.database
 
+import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import com.medzin.board_game_collector.database.objects.GameRank
-import com.medzin.board_game_collector.database.objects.Person
 import com.medzin.board_game_collector.util.DBQuery
-import com.medzin.board_game_collector.util.PersonParser
+import java.time.format.DateTimeFormatter
 
 class ArchiveRankDBHelper {
 
@@ -26,6 +26,16 @@ class ArchiveRankDBHelper {
 
         fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
             TODO("Not yet implemented")
+        }
+
+        fun addRank(gameId: Int, rank: GameRank, db: SQLiteDatabase){
+            val values = ContentValues()
+            values.put(COLUMN_GAME_ID, gameId)
+            values.put(COLUMN_RANK, rank.rank)
+            if (rank.sinceDate != null) {
+                values.put(COLUMN_DATE, rank.sinceDate?.format(DateTimeFormatter.ISO_LOCAL_DATE))
+            }
+            db.insert(TABLE_RANKS, null, values);
         }
 
         fun findRanks(gameId: Int, db: SQLiteDatabase): MutableList<GameRank> {

@@ -1,3 +1,72 @@
 <resources>
     <string name="app_name">board-game-collector</string>
+    <string name="collection_main_title">Twoja kolekcja gier:</string>
+    <string name="bgg_btn">Idź do BGG</string>
+    <string name="new_game_btn">Dodaj nową grę</string>
+    <string name="loc_btn">Lokalizacje</string>
+    <string name="new_game_manual_title">Nowa gra</string>
+    <string name="game_title_lbl">Tytuł gry</string>
+    <string name="game_org_title_lbl">Oryginalny tytuł</string>
+    <string name="year_published_lbl">Rok wydania</string>
+    <string name="designers_lbl">Projektanci</string>
+    <string name="artists_lbl">Artyści</string>
+    <string name="description_lbl">Opis</string>
+    <string name="order_date_lbl">Data zamówienia</string>
+    <string name="collect_date_lbl">Data dodania do kolekcji</string>
+    <string name="price_lbl">Koszt zakupu</string>
+    <string name="sdc_lbl">Sugerowana cena detaliczna</string>
+    <string name="ean_upc_lbl">EAN/UPC</string>
+    <string name="product_code_lbl">Kod produkcyjny</string>
+    <string name="location_lbl">Lokalizacja</string>
+    <string name="bgg_code_lbl">Identyfikator BGG</string>
+    <string name="rank_lbl">Pozycja w rankingu</string>
+    <string name="type_lbl">Rodzaj</string>
+    <string name="comment_lbl">Komentarz</string>
+    <string name="cancel_btn">Anuluj</string>
+    <string name="add_new_btn">Dodaj grę</string>
+    <string-array name="type_options">
+        <item>Gra podstawowa</item>
+        <item>Dodatek</item>
+        <item>Mieszane</item>
+    </string-array>
+    <string-array name="sort_schemes">
+        <item>Nazwa (rosnąco)</item>
+        <item>Nazwa (malejąco)</item>
+        <item>Ranking (rosnąco)</item>
+        <item>Ranking (malejąco)</item>
+        <item>Data dodania (rosnąco)</item>
+        <item>Data dodania (malejąco)</item>
+    </string-array>
+    <string name="add_success_msg">Grę dodano do bazy danych</string>
+    <string name="add_failed_msg">Nie udało się dodać gry do bazy danych</string>
+    <string name="delete_success_msg">Gra została poprawnie usunięta</string>
+    <string name="delete_failed_msg">Nie udało się usunąć gry z bazy danych</string>
+    <string name="delete_game_btn">Usuń grę</string>
+    <string name="delete_assertion">Na pewno chcesz usunąć tę grę ze swojego zbioru?</string>
+    <string name="yes">tak</string>
+    <string name="no">nie</string>
+    <string name="thumbnail_description">Zdjęcie gry</string>
+    <string name="new_lostaion_btn">Dodaj</string>
+    <string name="new_location_prompt">Nowa lokalizacja…</string>
+    <string name="new_location_comment_prompt">Komentarz…</string>
+    <string name="back_btn_location">Wróć</string>
+    <string name="game_search_url">https://www.boardgamegeek.com/xmlapi2/search?query=%s&amp;type=boardgame</string>
+    <string name="game_search_xml">Searched_games.xml</string>
+    <string name="game_details_url">https://www.boardgamegeek.com/xmlapi2/thing?id=%d&amp;stats=1</string>
+    <string name="game_details_xml">Game_details.xml</string>
+    <string name="user_collection_url">https://www.boardgamegeek.com/xmlapi2/collection?username=%s</string>
+    <string name="user_collection_xml">User_collection.xml</string>
+    <string name="game_title_hint">Podaj tytuł…</string>
+    <string name="username_hint">Podaj nazwę użytkownika…</string>
+    <string name="search_games_btn">Wyszukaj grę</string>
+    <string name="import_user_btn">Importuj gry użytkownika</string>
+    <string name="manual_game_input_btn">Wprowadź grę ręcznie</string>
+    <string name="empty_search_info">Brak wyników</string>
+    <string name="empty_title_msg">Wprowadź tytuł gry, aby wyszukać</string>
+    <string name="empty_username_msg">Wprowadź nazwę użytkownika, aby zaimportować</string>
+    <string name="user_games_import_began">Rozpoczęto pobieranie gier użytkownika</string>
+    <string name="user_games_import_success_msg">Gry użytkownika zostały zaimportowane</string>
+    <string name="user_notfound_msg">Nie znaleziono użytkownika o podanej nazwie</string>
+    <string name="refresh_ranks_btn">Pobierz nowy ranking</string>
+
 </resources>
