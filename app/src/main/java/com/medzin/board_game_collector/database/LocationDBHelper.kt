@@ -2,17 +2,16 @@ package com.medzin.board_game_collector.database
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-import com.medzin.board_game_collector.database.objects.Game
 import com.medzin.board_game_collector.database.objects.Location
 import com.medzin.board_game_collector.util.DBQuery
 
 class LocationDBHelper {
 
     companion object {
-        val TABLE_LOCATION = "location"
-        val COLUMN_ID = "id"
-        val COLUMN_NAME = "name"
-        val COLUMN_COMMENT = "comment"
+        private const val TABLE_LOCATION = "location"
+        private const val COLUMN_ID = "id"
+        private const val COLUMN_NAME = "name"
+        private const val COLUMN_COMMENT = "comment"
 
         fun onCreate(db: SQLiteDatabase) {
             val CREATE_ARTISTS_TABLE = ("CREATE TABLE " + TABLE_LOCATION + "(" +
@@ -21,17 +20,13 @@ class LocationDBHelper {
             db.execSQL(CREATE_ARTISTS_TABLE)
         }
 
-        fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-            TODO("Not yet implemented")
-        }
-
         fun addLocation(location: Location, db: SQLiteDatabase){
             val values = ContentValues()
             values.put(COLUMN_NAME, location.name)
             if (location.comment != null) {
                 values.put(COLUMN_COMMENT, location.comment)
             }
-            db.insert(TABLE_LOCATION, null, values);
+            db.insert(TABLE_LOCATION, null, values)
         }
 
         fun updateLocation(location: Location, db: SQLiteDatabase){
@@ -41,7 +36,7 @@ class LocationDBHelper {
                 values.put(COLUMN_COMMENT, location.comment)
             }
             db.update(TABLE_LOCATION, values, "$COLUMN_ID=?",
-                arrayOf(location.id.toString()));
+                arrayOf(location.id.toString()))
         }
 
         fun findLocation(id: Int, db: SQLiteDatabase): Location? {
@@ -60,7 +55,7 @@ class LocationDBHelper {
             return null
         }
 
-        fun getLocations(db: SQLiteDatabase)= sequence<Location> {
+        fun getLocations(db: SQLiteDatabase)= sequence {
             val query = "SELECT * FROM $TABLE_LOCATION"
             val cursor = db.rawQuery(query, null)
 
@@ -75,7 +70,7 @@ class LocationDBHelper {
         }
 
         fun getIdOfLocation(name: String?, db: SQLiteDatabase): Int {
-            if(name == null) return 0;
+            if(name == null) return 0
             val query = "SELECT * FROM $TABLE_LOCATION WHERE $COLUMN_NAME = ?"
             val cursor = db.rawQuery(query, arrayOf(name))
 
@@ -88,8 +83,8 @@ class LocationDBHelper {
             return 0
         }
 
-        fun deleteLocation(id: Int, db: SQLiteDatabase) {
-            db.delete(TABLE_LOCATION, "$COLUMN_ID = ?", arrayOf(id.toString()))
+        fun deleteLocation(id: Int, db: SQLiteDatabase): Boolean {
+            return db.delete(TABLE_LOCATION, "$COLUMN_ID = ?", arrayOf(id.toString())) > 0
         }
     }
 }

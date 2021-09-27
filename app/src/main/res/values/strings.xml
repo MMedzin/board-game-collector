@@ -39,6 +39,7 @@
     </string-array>
     <string name="add_success_msg">Grę dodano do bazy danych</string>
     <string name="add_failed_msg">Nie udało się dodać gry do bazy danych</string>
+    <string name="game_exists_msg">Gra o podanym tytule istnieje już w bazie danych</string>
     <string name="delete_success_msg">Gra została poprawnie usunięta</string>
     <string name="delete_failed_msg">Nie udało się usunąć gry z bazy danych</string>
     <string name="delete_game_btn">Usuń grę</string>
@@ -50,12 +51,16 @@
     <string name="new_location_prompt">Nowa lokalizacja…</string>
     <string name="new_location_comment_prompt">Komentarz…</string>
     <string name="back_btn_location">Wróć</string>
+    <string name="delete_location_btn">Usuń</string>
+    <string name="location_delete_success_msg">Lokalizacja została poprawnie usunięta</string>
+    <string name="location_delete_failed_msg">Nie udało się usunąć lokalizacji z bazy danych</string>
     <string name="game_search_url">https://www.boardgamegeek.com/xmlapi2/search?query=%s&amp;type=boardgame</string>
     <string name="game_search_xml">Searched_games.xml</string>
     <string name="game_details_url">https://www.boardgamegeek.com/xmlapi2/thing?id=%d&amp;stats=1</string>
     <string name="game_details_xml">Game_details.xml</string>
     <string name="user_collection_url">https://www.boardgamegeek.com/xmlapi2/collection?username=%s</string>
     <string name="user_collection_xml">User_collection.xml</string>
+    <string name="ranks_collection_url">https://www.boardgamegeek.com/xmlapi2/collection?username=%s&amp;stats=1</string>
     <string name="game_title_hint">Podaj tytuł…</string>
     <string name="username_hint">Podaj nazwę użytkownika…</string>
     <string name="search_games_btn">Wyszukaj grę</string>
@@ -63,10 +68,37 @@
     <string name="manual_game_input_btn">Wprowadź grę ręcznie</string>
     <string name="empty_search_info">Brak wyników</string>
     <string name="empty_title_msg">Wprowadź tytuł gry, aby wyszukać</string>
-    <string name="empty_username_msg">Wprowadź nazwę użytkownika, aby zaimportować</string>
+    <string name="empty_username_msg">Wprowadź nazwę użytkownika</string>
     <string name="user_games_import_began">Rozpoczęto pobieranie gier użytkownika</string>
     <string name="user_games_import_success_msg">Gry użytkownika zostały zaimportowane</string>
     <string name="user_notfound_msg">Nie znaleziono użytkownika o podanej nazwie</string>
     <string name="refresh_ranks_btn">Pobierz nowy ranking</string>
+    <string name="ranks_refresh_began">Rozpoczęto pobieranie aktualnych rankingów gier</string>
+    <string name="ranks_refresh_success_msg">Rankingi zostały zaktualizowane</string>
+    <string name="ranks_title">Historia rankingu gry %s</string>
+    <string name="bgg_title">Board Game Geek</string>
+    <string name="empty">Brak</string>
+    <string name="fill_field_msg">Uzupełnij %s</string>
+    <string name="date_format_msg">Data powinna być w formacie %s</string>
+    <string name="date_format">yyyy-mm-dd</string>
+    <string name="games_in_location_btn">Gry w lokalizacji</string>
+    <string name="save_img_failed_msg">Nie udało się zapisać zdjęcia gry</string>
+    <string name="load_img_failed_msg">Nie udało się wczytać zdjęcia gry</string>
+    <string name="log_init">Uruchamiam aktywność.</string>
+    <string name="log_init_done">Aktywność została uruchomiona.</string>
+    <string name="log_end">Kończę aktywność.</string>
+    <string name="log_api_user_search">Szukam kolekcji użytkownika w BGG.</string>
+    <string name="log_user_found">Uzytkownik odnaleziony.</string>
+    <string name="log_user_not_found">Uzytkownik nie został odnaleziony.</string>
+    <string name="log_user_collection_download">Rozpoczynam pobieranie kolekcji.</string>
+    <string name="log_user_collection_download_done">Kolekcja uzytkownika została pobrana.</string>
+    <string name="log_ranks_refresh">Aktualizuję rankingi gier.</string>
+    <string name="log_ranks_refresh_done">Rankingi gier zostały zaktualizowane</string>
+    <string name="log_game_search">Szukam gry w BGG.</string>
+    <string name="log_game_found">Gra znaleziona.</string>
+    <string name="log_game_not_found">Gra nis została znaleziona.</string>
+    <string name="log_download_game_data">Pobieram dane gry z BGG.</string>
+    <string name="log_download_game_data_done">Dane gry z BGG zostały pobrane.</string>
+    <string name="log_download_game_data_failed">Pobieranie danych gry z BGG nie powiodło się.</string>
 
 </resources>

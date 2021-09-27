@@ -55,24 +55,17 @@
             android:ems="10"
             android:inputType="textLongMessage|textPersonName" />
 
-        <LinearLayout
+        <EditText
+            android:id="@+id/newLocationComment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:ems="10"
+            android:inputType="textLongMessage|textPersonName" />
 
-            <EditText
-                android:id="@+id/newLocationComment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:ems="10"
-                android:inputType="textLongMessage|textPersonName" />
-
-            <Button
-                android:id="@+id/addNewBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"/>
-
-        </LinearLayout>
+        <Button
+            android:id="@+id/addNewBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 

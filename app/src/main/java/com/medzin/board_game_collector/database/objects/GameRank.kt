@@ -2,14 +2,15 @@ package com.medzin.board_game_collector.database.objects
 
 import java.time.LocalDate
 
-class GameRank {
+class GameRank(var rank: Int, var sinceDate: LocalDate?) : Comparable<GameRank> {
 
-    var rank: Int = 0
-    var sinceDate: LocalDate? = null
-
-    constructor(rank: Int, sinceDate: LocalDate?){
-        this.rank = rank
-        this.sinceDate = sinceDate
+    override fun compareTo(other: GameRank): Int {
+        if (this.sinceDate == other.sinceDate){
+            return 0
+        }else if (this.sinceDate!! < other.sinceDate){
+            return -1
+        }
+        return 1
     }
 
 }

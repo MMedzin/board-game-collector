@@ -4,14 +4,13 @@ import android.content.Context
 import com.medzin.board_game_collector.R
 import java.io.File
 import java.io.FileOutputStream
-import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URL
 
 class BGGapiClient {
 
     companion object {
-        fun queryXML(context: Context, urlString: String, output: String): Boolean {
+        private fun queryXML(context: Context, urlString: String, output: String): Boolean {
             try {
                 val url = URL(urlString)
                 val connection = url.openConnection() as HttpURLConnection
@@ -54,8 +53,11 @@ class BGGapiClient {
             return queryXML(context, urlString, context.getString(R.string.game_details_xml))
         }
 
-        fun getUserCollection(context: Context, username: String): Boolean {
-            val urlString = context.getString(R.string.user_collection_url, username)
+        fun getUserCollection(context: Context, username: String, getRanks: Boolean = false): Boolean {
+            val urlString = context.getString(
+                    (if (getRanks) R.string.user_collection_url else R.string.ranks_collection_url),
+                    username
+            )
             return queryXML(context, urlString, context.getString(R.string.user_collection_xml))
         }
 

@@ -5,11 +5,6 @@ class Location {
     var name: String? = null
     var comment: String? = null
 
-    constructor(id: Int, name: String){
-        this.id = id
-        this.name = name
-    }
-
     constructor(id: Int, name: String?, comment: String?){
         this.id = id
         this.name = name
@@ -19,10 +14,6 @@ class Location {
     constructor(name: String, comment: String){
         this.name = name
         this.comment = comment
-    }
-
-    constructor(name: String){
-        this.name = name
     }
 
 }

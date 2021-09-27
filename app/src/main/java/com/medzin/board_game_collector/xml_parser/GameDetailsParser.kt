@@ -1,6 +1,7 @@
 package com.medzin.board_game_collector.xml_parser
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.core.text.isDigitsOnly
 import com.medzin.board_game_collector.R
@@ -21,12 +22,9 @@ class GameDetailsParser {
     companion object {
 
         private fun parse(context: Context, title: String, baseGame: Game?): Game? {
-            val game: Game
-            if (baseGame == null) {
-                game = Game(title)
-            } else {
-                game = baseGame
-            }
+            val game: Game = baseGame ?: Game(title)
+            var image: Bitmap? = null
+            var orgTitleSet = false
             try {
                 val workDir = File("${context.filesDir}/XML")
                 if (workDir.exists()) {
@@ -76,9 +74,28 @@ class GameDetailsParser {
                                                     url.openConnection().getInputStream()
                                                 )
                                             }
+                                            "image" -> {
+                                                val url = URL(node.textContent)
+                                                image = BitmapFactory.decodeStream(
+                                                        url.openConnection().getInputStream())
+                                                if (orgTitleSet){
+                                                    game.addImage(
+                                                            context,
+                                                            image)
+                                                    image = null
+                                                }
+                                            }
                                             "name" -> {
                                                 if (node.getAttribute("type") == "primary") {
                                                     game.originalTitle = node.getAttribute("value")
+                                                    orgTitleSet = true
+                                                    if (image != null) {
+                                                        game.addImage(
+                                                                context,
+                                                                image
+                                                        )
+                                                        image = null
+                                                    }
                                                 }
                                             }
                                             "description" -> {
@@ -136,7 +153,6 @@ class GameDetailsParser {
             } catch (rex: ResultNotReadyException) {
                 throw rex
             }   catch (e: Exception){
-                e.printStackTrace()
                 return null
         }
         return game
@@ -144,10 +160,6 @@ class GameDetailsParser {
 
         fun parse(context: Context, title: String): Game? {
             return parse(context, title, null)
-        }
-
-        fun parse(context: Context, baseGame: Game): Game? {
-            return parse(context, "", baseGame)
         }
 
     }

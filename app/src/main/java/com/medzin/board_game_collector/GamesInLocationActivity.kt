@@ -13,16 +13,14 @@ import androidx.core.text.bold
 import androidx.core.text.buildSpannedString
 import androidx.core.text.color
 import com.medzin.board_game_collector.database.GameDBHandler
-import com.medzin.board_game_collector.databinding.ActivityMainBinding
+import com.medzin.board_game_collector.databinding.ActivityGamesInLocationBinding
 import com.medzin.board_game_collector.util.SortScheme
 
-
-class MainActivity : AppCompatActivity() {
-    private val TAG = "MainActivity"
-
-    private lateinit var binding: ActivityMainBinding
+class GamesInLocationActivity : AppCompatActivity() {
+    private val TAG = "GamesInLocationActivity"
+    private lateinit var binding: ActivityGamesInLocationBinding
+    private var locationId: Int = 0
     var sortScheme = SortScheme.NAME_ASC
-
     private val TEXT_PREVIEW_LINES_LIMIT = 4
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,24 +32,18 @@ class MainActivity : AppCompatActivity() {
         } catch (e: NullPointerException) {
         }
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        val extras = intent.extras ?: return
+        locationId = extras.getInt("locationId")
+
+        binding = ActivityGamesInLocationBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
 
-        val title: TextView = findViewById(R.id.mainTitle)
-        title.text = getString(R.string.collection_main_title)
-
-        binding.bggButton.text = getString(R.string.bgg_btn)
-        binding.newGameButton.text = getString(R.string.new_game_btn)
-        binding.locationsBtn.text = getString(R.string.loc_btn)
-
-        binding.refreshBtn.height = binding.refreshBtn.width
-
-        val sortSchemeSpinner = binding.sortSchemeDropdown
+        val sortSchemeSpinner = binding.sortSchemeDropdownInLocation
         ArrayAdapter.createFromResource(
-                this,
-                R.array.sort_schemes,
-                android.R.layout.simple_spinner_item
+            this,
+            R.array.sort_schemes,
+            android.R.layout.simple_spinner_item
         ).also {adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             sortSchemeSpinner.adapter = adapter
@@ -60,9 +52,9 @@ class MainActivity : AppCompatActivity() {
 
             override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
                 sortScheme = SortScheme.translateTypeName(
-                        parent.getItemAtPosition(pos).toString(),
-                        resources.getStringArray(R.array.sort_schemes))
-                fillCollectionTable()
+                    parent.getItemAtPosition(pos).toString(),
+                    resources.getStringArray(R.array.sort_schemes))
+                fillGamesTable()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
@@ -70,37 +62,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
         sortSchemeSpinner.setSelection(sortScheme.ind)
+
+
+        fillGamesTable()
         Log.v(TAG, getString(R.string.log_init_done))
-    }
-
-    fun goToBGG(v: View){
-        val i = Intent(this, BGGActivity::class.java)
-        startActivityForResult(i, 1)
-    }
-
-    fun goToNewGame(v: View){
-        val i = Intent(this, AddFromBGG::class.java)
-        startActivityForResult(i, 1)
-    }
-
-    fun goToLocations(v: View){
-        val i = Intent(this, LocationActivity::class.java)
-        startActivityForResult(i, 1)
-    }
-
-    fun refresh(v: View){
-        fillCollectionTable()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == 1){
-            fillCollectionTable()
+            fillGamesTable()
         }
     }
 
-    fun fillCollectionTable(){
-        val gamesTable: TableLayout = binding.collectionTable
+    fun fillGamesTable(){
+        val gamesTable: TableLayout = binding.gamesTable
         gamesTable.setColumnShrinkable(2, true)
 
         val dbHandler = GameDBHandler(this, null, null, 1)
@@ -108,16 +84,17 @@ class MainActivity : AppCompatActivity() {
         gamesTable.removeAllViews()
 
         when (sortScheme){
-            SortScheme.NAME_ASC -> dbHandler.getGamesCollection().sortedBy{ it.title }
-            SortScheme.NAME_DESC -> dbHandler.getGamesCollection().sortedByDescending { it.title }
-            SortScheme.RANK_ASC -> dbHandler.getGamesCollection().sortedBy { it.currRank }
-            SortScheme.RANK_DESC -> dbHandler.getGamesCollection().sortedByDescending { it.currRank }
-            SortScheme.ADD_DATE_ASC -> dbHandler.getGamesCollection().sortedBy { it.dateOfCollecting }
-            SortScheme.ADD_DATE_DESC -> dbHandler.getGamesCollection().sortedByDescending { it.dateOfCollecting }
+            SortScheme.NAME_ASC -> dbHandler.getGamesInLocation(locationId).sortedBy{ it.title }
+            SortScheme.NAME_DESC -> dbHandler.getGamesInLocation(locationId).sortedByDescending { it.title }
+            SortScheme.RANK_ASC -> dbHandler.getGamesInLocation(locationId).sortedBy { it.currRank }
+            SortScheme.RANK_DESC -> dbHandler.getGamesInLocation(locationId).sortedByDescending { it.currRank }
+            SortScheme.ADD_DATE_ASC -> dbHandler.getGamesInLocation(locationId).sortedBy { it.dateOfCollecting }
+            SortScheme.ADD_DATE_DESC -> dbHandler.getGamesInLocation(locationId).sortedByDescending { it.dateOfCollecting }
         }.forEach { game ->
             val row = TableRow(this)
-            val tableRowParams = TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
-                    TableLayout.LayoutParams.WRAP_CONTENT)
+            val tableRowParams = TableLayout.LayoutParams(
+                TableLayout.LayoutParams.MATCH_PARENT,
+                TableLayout.LayoutParams.WRAP_CONTENT)
             row.layoutParams = tableRowParams
             row.background = ContextCompat.getDrawable(this, R.drawable.border)
             row.setOnClickListener {
@@ -128,16 +105,16 @@ class MainActivity : AppCompatActivity() {
 
             val rank = TextView(this)
             rank.layoutParams = TableRow.LayoutParams(
-                    TableRow.LayoutParams.MATCH_PARENT,
-                    TableRow.LayoutParams.MATCH_PARENT)
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.MATCH_PARENT)
             rank.text = game.currRank.toString()
             rank.background = ContextCompat.getDrawable(this, R.drawable.border)
             row.addView(rank)
 
             val image = ImageView(this)
             image.layoutParams = TableRow.LayoutParams(
-                    TableRow.LayoutParams.MATCH_PARENT,
-                    TableRow.LayoutParams.MATCH_PARENT)
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.MATCH_PARENT)
             if (game.thumbnail != null) image.setImageBitmap(game.thumbnail)
             else image.setImageResource(R.mipmap.ic_launcher)
             image.background = ContextCompat.getDrawable(this, R.drawable.border)
@@ -145,9 +122,9 @@ class MainActivity : AppCompatActivity() {
 
             val str = buildSpannedString {
                 bold{
-                   color(Color.BLUE){
-                       append(game.title)
-                   }
+                    color(Color.BLUE){
+                        append(game.title)
+                    }
                 }
                 append("(${game.yearPublished})\n")
                 if (!game.description.isNullOrEmpty()){
@@ -156,8 +133,8 @@ class MainActivity : AppCompatActivity() {
             }
             val description = TextView(this)
             description.layoutParams = TableRow.LayoutParams(
-                    TableRow.LayoutParams.MATCH_PARENT,
-                    TableRow.LayoutParams.MATCH_PARENT)
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.MATCH_PARENT)
             description.maxLines = TEXT_PREVIEW_LINES_LIMIT
             description.text = str
             description.background = ContextCompat.getDrawable(this, R.drawable.border)
@@ -166,6 +143,11 @@ class MainActivity : AppCompatActivity() {
             gamesTable.addView(row)
         }
 
+    }
+
+    fun goBack(v: View){
+        Log.v(TAG, getString(R.string.log_end))
+        this.finish()
     }
 
 }

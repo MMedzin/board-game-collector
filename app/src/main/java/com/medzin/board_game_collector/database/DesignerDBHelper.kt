@@ -8,40 +8,37 @@ import com.medzin.board_game_collector.util.PersonParser
 class DesignerDBHelper {
 
     companion object {
-        val TABLE_DESIGNERS = "designers"
-        val COLUMN_ID = "id"
-        val COLUMN_GAME_ID = "game_id"
-        val COLUMN_DESIGNERS_LIST = "designers_list"
+        private const val TABLE_DESIGNERS = "designers"
+        private const val COLUMN_ID = "id"
+        private const val COLUMN_GAME_TITLE = "game_title"
+        private const val COLUMN_DESIGNERS_LIST = "designers_list"
 
         fun onCreate(db: SQLiteDatabase) {
             val CREATE_DESIGNERS_TABLE = ("CREATE TABLE " + TABLE_DESIGNERS + "(" +
-                    COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_GAME_ID + " INTEGER," +
-                    COLUMN_DESIGNERS_LIST+ " TEXT," + "FOREIGN KEY(" + COLUMN_GAME_ID +
-                    ") REFERENCES " + GameDBHandler.TABLE_GAMES + "(" + GameDBHandler.COLUMN_ID + "))")
+                    COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_GAME_TITLE + " TEXT," +
+                    COLUMN_DESIGNERS_LIST+ " TEXT," + "FOREIGN KEY(" + COLUMN_GAME_TITLE +
+                    ") REFERENCES " + GameDBHandler.TABLE_GAMES + "(" +
+                    GameDBHandler.COLUMN_ORG_TITLE + "))")
             db.execSQL(CREATE_DESIGNERS_TABLE)
         }
 
-        fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-            TODO("Not yet implemented")
-        }
-
-        fun addDesigner(gameId: Int, designers: MutableList<Person>?, db: SQLiteDatabase){
+        fun addDesigner(gameTitle: String, designers: MutableList<Person>?, db: SQLiteDatabase){
             val values = ContentValues()
-            values.put(COLUMN_GAME_ID, gameId)
+            values.put(COLUMN_GAME_TITLE, gameTitle)
             values.put(COLUMN_DESIGNERS_LIST, PersonParser.stringifyPersonList(designers))
-            db.insert(TABLE_DESIGNERS, null, values)
+            db.insertOrThrow(TABLE_DESIGNERS, null, values)
         }
 
-        fun updateDesigner(gameId: Int, designers: MutableList<Person>?, db: SQLiteDatabase){
+        fun updateDesigner(gameTitle: String, designers: MutableList<Person>?, db: SQLiteDatabase){
             val values = ContentValues()
-            values.put(COLUMN_GAME_ID, gameId)
+            values.put(COLUMN_GAME_TITLE, gameTitle)
             values.put(COLUMN_DESIGNERS_LIST, PersonParser.stringifyPersonList(designers))
-            db.update(TABLE_DESIGNERS, values, "$COLUMN_GAME_ID=?", arrayOf(gameId.toString()));
+            db.update(TABLE_DESIGNERS, values, "$COLUMN_GAME_TITLE=?", arrayOf(gameTitle))
         }
 
-        fun findDesigners(gameId: Int, db: SQLiteDatabase): MutableList<Person> {
-            val query = "SELECT * FROM $TABLE_DESIGNERS WHERE $COLUMN_GAME_ID = ?"
-            val cursor = db.rawQuery(query, arrayOf(gameId.toString()))
+        fun findDesigners(gameTitle: String, db: SQLiteDatabase): MutableList<Person> {
+            val query = "SELECT * FROM $TABLE_DESIGNERS WHERE $COLUMN_GAME_TITLE = ?"
+            val cursor = db.rawQuery(query, arrayOf(gameTitle))
 
             if(cursor.moveToFirst()){
                 val resultList = PersonParser.parsePersonList(cursor.getString(cursor.getColumnIndex(
@@ -54,9 +51,6 @@ class DesignerDBHelper {
             return mutableListOf()
         }
 
-        fun deleteDesigners(gameId: Int, db: SQLiteDatabase) {
-            db.delete(TABLE_DESIGNERS, "$COLUMN_GAME_ID = ?", arrayOf(gameId.toString()))
-        }
     }
 
 }

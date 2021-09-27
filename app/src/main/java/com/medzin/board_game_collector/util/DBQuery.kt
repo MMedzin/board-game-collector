@@ -1,7 +1,6 @@
 package com.medzin.board_game_collector.util
 
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.time.LocalDate
@@ -32,32 +31,6 @@ class DBQuery {
             return BitmapFactory.decodeByteArray(byteArr, 0, byteArr.size)
         }
 
-//        fun queryBitmap(cursor: Cursor, db: SQLiteDatabase, tableName: String, id: Int,
-//                        idColumn: String, blobColumn: String): Bitmap? {
-////            if (cursor.isNull(cursor.getColumnIndex(blobColumn))) return null
-//            val lengthQuery = "SELECT length($blobColumn) FROM $tableName WHERE $idColumn = ?"
-//            val bitmapCursor = db.rawQuery(lengthQuery, arrayOf(id.toString()))
-//            if(bitmapCursor.moveToNext()){
-//                val length = bitmapCursor.getInt(0)
-//                var byteArr = byteArrayOf()
-//                var bufferSize = 1000000
-//                for (i in 1..(length-bufferSize) step bufferSize){
-//                    val end = i + bufferSize - 1
-//                    val bufferedQuery = "SELECT substr($blobColumn, $i, $end) FROM $tableName WHERE id = ?"
-//                    val bufferCursor = db.rawQuery(bufferedQuery, arrayOf(id.toString()))
-//                    if(bufferCursor.moveToNext()){
-//                           byteArr = byteArr.plus(bufferCursor.getBlob(0))
-//                    }
-//                }
-//                val bufferedQuery = "SELECT substr($blobColumn, ${(length - bufferSize + 1)}, $length) FROM $tableName WHERE id = ?"
-//                val bufferCursor = db.rawQuery(bufferedQuery, arrayOf(id.toString()))
-//                if(bufferCursor.moveToNext()){
-//                    byteArr = byteArr.plus(bufferCursor.getBlob(0))
-//                }
-//                return BitmapFactory.decodeByteArray(byteArr, 0, byteArr.size)
-//            }
-//            return null
-//        }
     }
 
 }

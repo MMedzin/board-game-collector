@@ -5,7 +5,7 @@ import com.medzin.board_game_collector.database.objects.Person
 class PersonParser {
     companion object{
         fun parsePersonList(listStr: String): MutableList<Person> {
-            val listStrSplit = listStr.split(Regex(",\\ *"))
+            val listStrSplit = listStr.split(Regex(", *"))
             val resultList = mutableListOf<Person>()
             listStrSplit.forEach {
                 resultList.add(Person(it))

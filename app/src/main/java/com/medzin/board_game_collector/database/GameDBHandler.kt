@@ -6,13 +6,13 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.graphics.Bitmap
-import com.medzin.board_game_collector.R
 import com.medzin.board_game_collector.database.objects.Game
 import com.medzin.board_game_collector.database.objects.GameRank
 import com.medzin.board_game_collector.database.objects.Location
 import com.medzin.board_game_collector.util.DBQuery
 import com.medzin.board_game_collector.util.GameType
 import java.io.ByteArrayOutputStream
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase.CursorFactory?,
@@ -20,39 +20,39 @@ class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase
                                                 factory, DATABASE_VERSION) {
 
     companion object {
-        private val DATABASE_VERSION = 1
-        private val DATABASE_NAME = "gameDB.db"
-        val TABLE_GAMES = "games"
-        val COLUMN_ID = "id"
-        val COLUMN_TITLE = "titile"
-        val COLUMN_ORG_TITLE = "original_title"
-        val COLUMN_YEAR_PUBLISHED = "year_published"
-        val COLUMN_DESCRIPTION = "description"
-        val COLUMN_ORDER_DATE = "order_date"
-        val COLUMN_COLLECT_DATE = "collect_date"
-        val COLUMN_PRICE = "price"
-        val COLUMN_SUGGESTED_DETAIL_PRICE = "suggested_detail_price"
-        val COLUMN_EAN_OR_UPC = "ean_or_upc"
-        val COLUMN_BGG_ID = "bgg_id"
-        val COLUMN_PRODUCT_CODE = "product_code"
-        val COLUMN_CURR_RANK = "curr_rank"
-        val COLUMN_TYPE = "type"
-        val COLUMN_COMMENT = "comment"
-        val COLUMN_THUMBNAIL = "thumbnail"
-        val COLUMN_LOCAL_ID = "localisation_id"
+        private const val DATABASE_VERSION = 1
+        private const val DATABASE_NAME = "gameDB.db"
+        const val TABLE_GAMES = "games"
+        const val COLUMN_TITLE = "title"
+        const val COLUMN_ORG_TITLE = "original_title"
+        const val COLUMN_YEAR_PUBLISHED = "year_published"
+        const val COLUMN_DESCRIPTION = "description"
+        const val COLUMN_ORDER_DATE = "order_date"
+        const val COLUMN_COLLECT_DATE = "collect_date"
+        const val COLUMN_PRICE = "price"
+        const val COLUMN_SUGGESTED_DETAIL_PRICE = "suggested_detail_price"
+        const val COLUMN_EAN_OR_UPC = "ean_or_upc"
+        const val COLUMN_BGG_ID = "bgg_id"
+        const val COLUMN_PRODUCT_CODE = "product_code"
+        const val COLUMN_CURR_RANK = "curr_rank"
+        const val COLUMN_TYPE = "type"
+        const val COLUMN_COMMENT = "comment"
+        const val COLUMN_THUMBNAIL = "thumbnail"
+        const val COLUMN_LOCAL_ID = "localisation_id"
+        const val COLUMN_IMAGE_PATH = "image_path"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
         val CREATE_GAMES_TABLE = ("CREATE TABLE " + TABLE_GAMES + "(" +
-                COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_TITLE + " TEXT," +
-                COLUMN_ORG_TITLE + " TEXT," + COLUMN_YEAR_PUBLISHED + " INTEGER," +
+                COLUMN_TITLE + " TEXT," +
+                COLUMN_ORG_TITLE + " TEXT PRIMARY KEY," + COLUMN_YEAR_PUBLISHED + " INTEGER," +
                 COLUMN_DESCRIPTION + " TEXT," + COLUMN_ORDER_DATE + " TEXT," +
                 COLUMN_COLLECT_DATE + " TEXT," + COLUMN_PRICE + " TEXT," +
                 COLUMN_SUGGESTED_DETAIL_PRICE + " TEXT," + COLUMN_EAN_OR_UPC + " INTEGER," +
                 COLUMN_BGG_ID + " INTEGER," + COLUMN_PRODUCT_CODE + " TEXT," +
                 COLUMN_CURR_RANK + " INTEGER," + COLUMN_TYPE + " TEXT," +
                 COLUMN_COMMENT + " TEXT," + COLUMN_THUMBNAIL + " BLOB," +
-                COLUMN_LOCAL_ID + " INTEGER)")
+                COLUMN_LOCAL_ID + " INTEGER," + COLUMN_IMAGE_PATH + " TEXT)")
         db.execSQL(CREATE_GAMES_TABLE)
         DesignerDBHelper.onCreate(db)
         ArtistDBHelper.onCreate(db)
@@ -61,7 +61,6 @@ class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        TODO("Not yet implemented")
     }
 
     fun addGame(game: Game){
@@ -104,14 +103,15 @@ class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase
             game.thumbnail?.compress(Bitmap.CompressFormat.PNG, 100, stream)
             values.put(COLUMN_THUMBNAIL, stream.toByteArray())
         }
+        if(game.imagePath != null){
+            values.put(COLUMN_IMAGE_PATH, game.imagePath)
+        }
 
-        db.insert(TABLE_GAMES, null, values)
+        db.insertOrThrow(TABLE_GAMES, null, values)
 
-
-        game.id = findGame(game.title!!, db)!!.id
-
-        ArtistDBHelper.addArtist(game.id, game.artists, db)
-        DesignerDBHelper.addDesigner(game.id, game.designers, db)
+        ArtistDBHelper.addArtist(game.originalTitle, game.artists, db)
+        DesignerDBHelper.addDesigner(game.originalTitle, game.designers, db)
+        RankDBHelper.addRank(GameRank(game.currRank, LocalDate.now()), game.originalTitle, db)
 
         db.close()
     }
@@ -148,6 +148,9 @@ class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase
                 LocationDBHelper.getIdOfLocation(game.location?.name, db)
             )
         }
+        else {
+            values.putNull(COLUMN_LOCAL_ID)
+        }
         if(game.comment != null){
             values.put(COLUMN_COMMENT, game.comment)
         }
@@ -156,18 +159,21 @@ class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase
             game.thumbnail?.compress(Bitmap.CompressFormat.PNG, 100, stream)
             values.put(COLUMN_THUMBNAIL, stream.toByteArray())
         }
+        if(game.imagePath != null){
+            values.put(COLUMN_IMAGE_PATH, game.imagePath)
+        }
 
-        db.update(TABLE_GAMES, values, "$COLUMN_ID=?", arrayOf(game.id.toString()))
+        db.update(TABLE_GAMES, values, "$COLUMN_ORG_TITLE=?", arrayOf(game.originalTitle))
 
-        ArtistDBHelper.updateArtist(game.id, game.artists, db)
-        DesignerDBHelper.updateDesigner(game.id, game.designers, db)
+        ArtistDBHelper.updateArtist(game.originalTitle, game.artists, db)
+        DesignerDBHelper.updateDesigner(game.originalTitle, game.designers, db)
 
         db.close()
     }
 
-    fun findGame(gameTitle: String,  db: SQLiteDatabase):Game? {
-        val query = "SELECT * FROM $TABLE_GAMES WHERE $COLUMN_TITLE LIKE ?"
-        val cursor = db.rawQuery(query, arrayOf(gameTitle))
+    private fun findGameOrgTitle(gameOrgTitle: String, db: SQLiteDatabase):Game? {
+        val query = "SELECT * FROM $TABLE_GAMES WHERE $COLUMN_ORG_TITLE=?"
+        val cursor = db.rawQuery(query, arrayOf(gameOrgTitle))
         var game: Game? = null
 
         if(cursor.moveToFirst()){
@@ -177,73 +183,46 @@ class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase
         return game
     }
 
-    fun findGameNonExtension(gameTitle: String,  db: SQLiteDatabase):Game? {
-        val query = "SELECT * FROM $TABLE_GAMES WHERE $COLUMN_TITLE LIKE ? AND $COLUMN_TYPE != ?"
-        val cursor = db.rawQuery(query, arrayOf(gameTitle, GameType.EXPANSION.name))
-        var game: Game? = null
-
-        if(cursor.moveToFirst()){
-            game = buildGameFromData(cursor, db)
-            cursor.close()
-        }
-        return game
-    }
-
-    fun findGame(gameId: Int,  db: SQLiteDatabase):Game? {
-        val query = "SELECT * FROM $TABLE_GAMES WHERE $COLUMN_ID=?"
-        val cursor = db.rawQuery(query, arrayOf(gameId.toString()))
-        var game: Game? = null
-
-        if(cursor.moveToFirst()){
-            game = buildGameFromData(cursor, db)
-            cursor.close()
-        }
-        return game
-    }
-
-    fun findGame(gameId: Int):Game? {
+    fun find(gameOrgTitle: String):Game? {
         val db = this.writableDatabase
-        var game: Game? = findGame(gameId, db)
+        val game: Game? = findGameOrgTitle(gameOrgTitle, db)
         db.close()
         return game
     }
 
-    fun findGame(gameTitle: String):Game? {
-        val db = this.writableDatabase
-        var game: Game? = findGame(gameTitle, db)
-        db.close()
-        return game
+    private fun isLocationUsed(locationId: Int, db: SQLiteDatabase): Boolean{
+        val query = "SELECT COUNT(*) FROM $TABLE_GAMES WHERE $COLUMN_LOCAL_ID=?"
+        val cursor = db.rawQuery(query, arrayOf(locationId.toString()))
+        if(cursor.moveToFirst()){
+            return cursor.getInt(0) > 0
+        }
+        cursor.close()
+        return false
     }
 
-    fun deleteGame(gameTitle: String): Boolean {
+    fun getGamesInLocation(locationId: Int) = sequence {
+        val query = "SELECT * FROM $TABLE_GAMES WHERE $COLUMN_LOCAL_ID=?"
+        val db = this@GameDBHandler.writableDatabase
+        val cursor = db.rawQuery(query, arrayOf(locationId.toString()))
+
+        while (cursor.moveToNext()) {
+            yield(buildGameFromData(cursor, db))
+        }
+        cursor.close()
+        db.close()
+    }
+
+    fun deleteGame(gameOrgTitle: String): Boolean {
         var result = false
-        val query = "SELECT * FROM $TABLE_GAMES WHERE $COLUMN_TITLE LIKE ?"
         val db = this.writableDatabase
-        val cursor = db.rawQuery(query, arrayOf(gameTitle))
-        if(cursor.moveToFirst()){
-            val id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(COLUMN_ID)))
-            DesignerDBHelper.deleteDesigners(id, db)
-            ArtistDBHelper.deleteArtists(id, db)
-            ArchiveRankDBHelper.deleteRanks(id, db)
-            db.delete(TABLE_GAMES, "$COLUMN_ID = ?", arrayOf(id.toString()))
-            cursor.close()
+        if (db.delete(TABLE_GAMES, "$COLUMN_ORG_TITLE = ?", arrayOf(gameOrgTitle)) > 0){
             result = true
         }
         db.close()
         return result
     }
 
-    fun deleteGame(gameId: Int): Boolean {
-        var result = false
-        val db = this.writableDatabase
-        if (db.delete(TABLE_GAMES, "$COLUMN_ID = ?", arrayOf(gameId.toString())) > 0){
-            result = true
-        }
-        db.close()
-        return result
-    }
-
-    fun getGamesCollection() = sequence<Game> {
+    fun getGamesCollection() = sequence {
         val query = "SELECT * FROM $TABLE_GAMES"
         val db = this@GameDBHandler.writableDatabase
         val cursor = db.rawQuery(query, null)
@@ -255,26 +234,13 @@ class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase
         db.close()
     }
 
-    fun getGamesCollectionNonExtensions() = sequence<Game> {
-        val query = "SELECT * FROM $TABLE_GAMES WHERE $COLUMN_TYPE != ?"
-        val db = this@GameDBHandler.writableDatabase
-        val cursor = db.rawQuery(query, arrayOf(GameType.EXPANSION.name))
-
-        while (cursor.moveToNext()) {
-            yield(buildGameFromData(cursor, db))
-        }
-        cursor.close()
-        db.close()
-    }
-
-    fun buildGameFromData(cursor: Cursor, db: SQLiteDatabase): Game {
-        val id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(COLUMN_ID)))
+    private fun buildGameFromData(cursor: Cursor, db: SQLiteDatabase): Game {
         val title = DBQuery.queryNullable(cursor, COLUMN_TITLE)
-        val originalTitle = DBQuery.queryNullable(cursor, COLUMN_ORG_TITLE)
+        val originalTitle = cursor.getString(cursor.getColumnIndex(COLUMN_ORG_TITLE))
         val yearPublished = Integer.parseInt(cursor.getString(cursor.getColumnIndex(
             COLUMN_YEAR_PUBLISHED)))
-        val designers = DesignerDBHelper.findDesigners(id, db)
-        val artists = ArtistDBHelper.findArtists(id, db)
+        val designers = DesignerDBHelper.findDesigners(originalTitle, db)
+        val artists = ArtistDBHelper.findArtists(originalTitle, db)
         val description = DBQuery.queryNullable(cursor, COLUMN_DESCRIPTION)
         val dateOfOrder = DBQuery.queryDate(cursor, COLUMN_ORDER_DATE)
         val dateOfCollecting = DBQuery.queryDate(cursor, COLUMN_COLLECT_DATE)
@@ -285,40 +251,22 @@ class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase
         val productCode = DBQuery.queryNullable(cursor, COLUMN_PRODUCT_CODE)
         val currRank = DBQuery.queryNullableInt(cursor, COLUMN_CURR_RANK)
         val type = GameType.valueOf(cursor.getString(cursor.getColumnIndex(COLUMN_TYPE)))
-//        val type = DBQuery.queryNullable(cursor, COLUMN_TYPE)
         val comment = DBQuery.queryNullable(cursor, COLUMN_COMMENT)
         val thumbnail = DBQuery.queryBitmap(cursor, COLUMN_THUMBNAIL)
+        val imagePath = DBQuery.queryNullable(cursor, COLUMN_IMAGE_PATH)
+
         val localisation = if (cursor.isNull(cursor.getColumnIndex(COLUMN_LOCAL_ID))) null else LocationDBHelper.findLocation(
                 DBQuery.queryNullableInt(cursor, COLUMN_LOCAL_ID), db)
-        return Game(id, title, originalTitle, yearPublished, designers, artists, description,
+        val game =  Game(title, originalTitle, yearPublished, designers, artists, description,
             dateOfOrder, dateOfCollecting, pricePaid, suggestedDetailPrice, eanOrUpcCode,
             bggId, productCode, currRank, type, comment, thumbnail, localisation)
-    }
-
-    fun findArchiveRanks(gameTitle: String): MutableList<GameRank>{
-        val query = "SELECT * FROM $TABLE_GAMES WHERE $COLUMN_TITLE LIKE \"?\""
-        val db = this.writableDatabase
-        val cursor = db.rawQuery(query, arrayOf(gameTitle))
-        var result = mutableListOf<GameRank>()
-
-        if(cursor.moveToFirst()) {
-            val id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(COLUMN_ID)))
-            result = ArchiveRankDBHelper.findRanks(id, db)
-            cursor.close()
-        }
-        db.close()
-        return result
+        game.imagePath = imagePath
+        return game
     }
 
     fun addLocation(location: Location){
         val db = this.writableDatabase
         LocationDBHelper.addLocation(location, db)
-        db.close()
-    }
-
-    fun addArchiveRanke(gameId: Int, rank: GameRank){
-        val db = this.writableDatabase
-        ArchiveRankDBHelper.addRank(gameId, rank, db)
         db.close()
     }
 
@@ -331,10 +279,35 @@ class GameDBHandler(var context: Context, name: String?, factory: SQLiteDatabase
         return result
     }
 
+    fun deleteLocation(name: String): Boolean{
+        val db = this.writableDatabase
+        val locationId = LocationDBHelper.getIdOfLocation(name, db)
+        val result = if (!isLocationUsed(locationId, db))
+            LocationDBHelper.deleteLocation(locationId, db) else false
+        db.close()
+        return result
+    }
+
     fun updateLocation(location: Location){
         val db = this.writableDatabase
         LocationDBHelper.updateLocation(location, db)
         db.close()
+    }
+
+    fun addRank(gameOrgTitle: String, rank: GameRank){
+        val db = this.writableDatabase
+        RankDBHelper.addRank(rank, gameOrgTitle, db)
+        db.close()
+    }
+
+    fun getRanks(gameOrgTitle: String): Array<GameRank>{
+        val db = this.writableDatabase
+        var result: Array<GameRank> = emptyArray()
+        RankDBHelper.getAllGameRanks(gameOrgTitle, db).forEach {
+            result = result.plus(it)
+        }
+        db.close()
+        return result
     }
 
 }

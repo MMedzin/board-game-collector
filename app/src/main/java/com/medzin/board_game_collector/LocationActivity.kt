@@ -1,26 +1,32 @@
 package com.medzin.board_game_collector
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.widget.EditText
-import android.widget.TableLayout
-import android.widget.TableRow
-import android.widget.TextView
+import android.util.Log
+import android.view.Gravity
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.medzin.board_game_collector.database.GameDBHandler
-import com.medzin.board_game_collector.database.objects.Game
 import com.medzin.board_game_collector.database.objects.Location
 import com.medzin.board_game_collector.databinding.ActivityLocationsBinding
 
 class LocationActivity : AppCompatActivity() {
+    private val TAG = "LocationActivity"
 
     private lateinit var binding: ActivityLocationsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v(TAG, getString(R.string.log_init))
         super.onCreate(savedInstanceState)
+
+        try {
+            this.supportActionBar!!.hide()
+        } catch (e: NullPointerException) {
+        }
+
         binding = ActivityLocationsBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
@@ -28,7 +34,7 @@ class LocationActivity : AppCompatActivity() {
         fillLocationTable()
 
         binding.addNewBtn.text = getString(R.string.new_lostaion_btn)
-        binding.addNewBtn.setOnClickListener { _ ->
+        binding.addNewBtn.setOnClickListener {
             val dbHandler = GameDBHandler(this, null, null, 1)
             dbHandler.addLocation(Location(
                     binding.newLocation.text.toString(),
@@ -36,9 +42,12 @@ class LocationActivity : AppCompatActivity() {
             ))
             binding.newLocation.setText("")
             binding.newLocationComment.setText("")
+            fillLocationTable()
         }
         binding.backBtnLocations.text = getString(R.string.back_btn_location)
-        binding.backBtnLocations.setOnClickListener { _ ->
+        binding.backBtnLocations.setOnClickListener {
+            Log.v(TAG, getString(R.string.log_end))
+            setResult(1)
             this.finish()
         }
         binding.newLocation.hint = getString(R.string.new_location_prompt)
@@ -49,12 +58,11 @@ class LocationActivity : AppCompatActivity() {
         binding.newLocation.setOnFocusChangeListener { _, _ ->
             binding.newLocationComment.hint = ""
         }
-
-
+        Log.v(TAG, getString(R.string.log_init_done))
     }
 
-    fun fillLocationTable() {
-        val locationsTable: TableLayout = findViewById(R.id.locationTable)
+    private fun fillLocationTable() {
+        val locationsTable: TableLayout = binding.locationTable
 
         val dbHandler = GameDBHandler(this, null, null, 1)
 
@@ -66,23 +74,17 @@ class LocationActivity : AppCompatActivity() {
                     TableLayout.LayoutParams.WRAP_CONTENT)
             row.layoutParams = tableRowParams
             row.background = ContextCompat.getDrawable(this, R.drawable.border)
+//            row.gravity = Gravity.CENTER
 
             val name = EditText(this)
-            name.layoutParams = TableRow.LayoutParams(
-                    TableRow.LayoutParams.MATCH_PARENT,
-                    TableRow.LayoutParams.MATCH_PARENT)
             name.setText(location.name.toString())
-            println(location.name)
+            name.gravity = Gravity.CENTER
             name.background = ContextCompat.getDrawable(this, R.drawable.border)
 
 
             val comment = EditText(this)
-            comment.layoutParams = TableRow.LayoutParams(
-                    TableRow.LayoutParams.MATCH_PARENT,
-                    TableRow.LayoutParams.MATCH_PARENT)
             comment.setText(location.comment.toString())
-            println(location.comment )
-            comment.background = ContextCompat.getDrawable(this, R.drawable.border)
+            comment.gravity = Gravity.CENTER
 
             name.addTextChangedListener(object: TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
@@ -113,6 +115,34 @@ class LocationActivity : AppCompatActivity() {
 
             })
             row.addView(comment)
+
+            val deleteBtn = Button(this)
+            deleteBtn.setOnClickListener {
+                if (dbHandler.deleteLocation(name.text.toString())) {
+                    Toast.makeText(this, getString(R.string.location_delete_success_msg),
+                            Toast.LENGTH_SHORT).show()
+                    setResult(1)
+                    this.finish()
+                }
+                else {
+                    Toast.makeText(this, getString(R.string.location_delete_failed_msg),
+                            Toast.LENGTH_SHORT).show()
+                }
+            }
+            deleteBtn.text = getString(R.string.delete_location_btn)
+
+            row.addView(deleteBtn)
+
+            val gameListBtn = Button(this)
+            gameListBtn.setOnClickListener {
+                val i = Intent(this, GamesInLocationActivity::class.java)
+                i.putExtra("locationId", location.id)
+                startActivity(i)
+            }
+            gameListBtn.text = getString(R.string.games_in_location_btn)
+
+            row.addView(gameListBtn)
+
 
             locationsTable.addView(row)
         }

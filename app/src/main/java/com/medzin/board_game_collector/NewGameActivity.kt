@@ -1,9 +1,11 @@
 package com.medzin.board_game_collector
 
-import androidx.appcompat.app.AppCompatActivity
+import android.database.sqlite.SQLiteConstraintException
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import com.medzin.board_game_collector.database.GameDBHandler
 import com.medzin.board_game_collector.database.objects.Game
 import com.medzin.board_game_collector.databinding.ActivityNewGameBinding
@@ -11,28 +13,31 @@ import com.medzin.board_game_collector.util.GameType
 import com.medzin.board_game_collector.util.PersonParser
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 class NewGameActivity : AppCompatActivity() {
+    private val TAG = "NewGameActivity"
 
     private lateinit var binding: ActivityNewGameBinding
 
     lateinit var title: EditText
-    lateinit var orgTitle: EditText
-    lateinit var yearPublished: EditText
-    lateinit var designers: EditText
-    lateinit var artists: EditText
-    lateinit var description: EditText
-    lateinit var orderDate: EditText
-    lateinit var price: EditText
-    lateinit var sdc: EditText
-    lateinit var eanUpc: EditText
-    lateinit var productCode: EditText
+    private lateinit var orgTitle: EditText
+    private lateinit var yearPublished: EditText
+    private lateinit var designers: EditText
+    private lateinit var artists: EditText
+    private lateinit var description: EditText
+    private lateinit var orderDate: EditText
+    private lateinit var price: EditText
+    private lateinit var sdc: EditText
+    private lateinit var eanUpc: EditText
+    private lateinit var productCode: EditText
     lateinit var rank: EditText
-    lateinit var typeDropdown: Spinner
+    private lateinit var typeDropdown: Spinner
     lateinit var type: String
     lateinit var comment: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v(TAG, getString(R.string.log_init))
         super.onCreate(savedInstanceState)
         binding = ActivityNewGameBinding.inflate(layoutInflater)
         val view = binding.root
@@ -40,7 +45,7 @@ class NewGameActivity : AppCompatActivity() {
 
         setLabels()
 
-        typeDropdown = findViewById<Spinner>(R.id.typeDropdown)
+        typeDropdown = findViewById(R.id.typeDropdown)
         ArrayAdapter.createFromResource(
                 this,
                 R.array.type_options,
@@ -61,27 +66,28 @@ class NewGameActivity : AppCompatActivity() {
         }
         typeDropdown.setSelection(0)
 
-        title = findViewById(R.id.title)
-        orgTitle = findViewById(R.id.originalTitle)
-        yearPublished = findViewById(R.id.yearPublished)
-        designers = findViewById(R.id.designers)
-        artists = findViewById(R.id.artists)
-        description = findViewById(R.id.description)
-        orderDate = findViewById(R.id.orderDate)
-        price = findViewById(R.id.price)
-        sdc = findViewById(R.id.sdc)
-        eanUpc = findViewById(R.id.eanUpc)
-        productCode = findViewById(R.id.productCode)
-        rank = findViewById(R.id.rank)
-        comment = findViewById(R.id.rank)
+        title = binding.title
+        orgTitle = binding.originalTitle
+        yearPublished = binding.yearPublished
+        designers = binding.designers
+        artists = binding.artists
+        description = binding.description
+        orderDate = binding.orderDate
+        price = binding.price
+        sdc = binding.sdc
+        eanUpc = binding.eanUpc
+        productCode = binding.productCode
+        rank = binding.rank
+        comment = binding.comment
 
-        binding.cancelBtn.text = getString(R.string.cancel_btn)
         binding.confirmBtn.text = getString(R.string.add_new_btn)
         binding.titleNewGame.text = getString(R.string.new_game_manual_title)
 
+        orderDate.hint = getString(R.string.date_format)
+        Log.v(TAG, getString(R.string.log_init_done))
     }
 
-    fun setLabels(){
+    private fun setLabels(){
         setLabel(R.id.gameTitleLbl, R.string.game_title_lbl)
 
         setLabel(R.id.originalTitleLbl, R.string.game_org_title_lbl)
@@ -111,52 +117,115 @@ class NewGameActivity : AppCompatActivity() {
         setLabel(R.id.commentLbl, R.string.comment_lbl)
     }
 
-    fun setLabel(viewId: Int, labelId: Int){
+    private fun setLabel(viewId: Int, labelId: Int){
         val lbl = findViewById<TextView>(viewId)
         lbl.text = getString(labelId)
     }
 
     fun addNewGame(v: View){
-        val dbHandler = GameDBHandler(this, null, null, 1)
+        if (necessaryFilled() && datesFormatCorrect()){
+            val dbHandler = GameDBHandler(this, null, null, 1)
 
-        val yearPublishedInt = Integer.parseInt(yearPublished.text.toString())
-        val eanUpcInt = Integer.parseInt(eanUpc.text.toString())
-        val orderDateLocalDate = LocalDate.parse(orderDate.text.toString(), DateTimeFormatter.ISO_LOCAL_DATE)
-        val rankInt = Integer.parseInt(rank.text.toString())
-        val designersList = PersonParser.parsePersonList(designers.text.toString())
-        val artistsList = PersonParser.parsePersonList(artists.text.toString())
-        val gameType = GameType.translateTypeName(type, resources.getStringArray(R.array.type_options))
-
-
-        dbHandler.addGame(Game(0, title.text.toString(), orgTitle.text.toString(),
-                yearPublishedInt, designersList, artistsList, description.text.toString(),
-                orderDateLocalDate, LocalDate.now(), price.text.toString(), sdc.text.toString(),
-                eanUpcInt, 0, productCode.text.toString(), rankInt, gameType,
-                comment.text.toString(), null, null
-        ))
-
-        typeDropdown.setSelection(0)
+            try {
+                val yearPublishedInt = Integer.parseInt(yearPublished.text.toString())
+                val eanUpcInt =  try { Integer.parseInt(eanUpc.text.toString()) } catch (e: NumberFormatException) {0}
+                val orderDateLocalDate = LocalDate.parse(orderDate.text.toString(), DateTimeFormatter.ISO_LOCAL_DATE)
+                val rankInt = try { Integer.parseInt(rank.text.toString()) } catch (e: NumberFormatException) {0}
+                val designersList = PersonParser.parsePersonList(designers.text.toString())
+                val artistsList = PersonParser.parsePersonList(artists.text.toString())
+                val gameType = GameType.translateTypeName(type, resources.getStringArray(R.array.type_options))
 
 
-        title.setText("")
-        orgTitle.setText("")
-        yearPublished.setText("")
-        designers.setText("")
-        artists.setText("")
-        description.setText("")
-        orderDate.setText("")
-        price.setText("")
-        sdc.setText("")
-        eanUpc.setText("")
-        productCode.setText("")
-        rank.setText("")
-        comment.setText("")
-        Toast.makeText(this, getString(R.string.add_success_msg), Toast.LENGTH_SHORT).show()
+                dbHandler.addGame(Game(title.text.toString(), orgTitle.text.toString(),
+                        yearPublishedInt, designersList, artistsList, description.text.toString(),
+                        orderDateLocalDate, LocalDate.now(), price.text.toString(), sdc.text.toString(),
+                        eanUpcInt, 0, productCode.text.toString(), rankInt, gameType,
+                        comment.text.toString(), null, null
+                ))
+
+                typeDropdown.setSelection(0)
+
+
+                title.setText("")
+                orgTitle.setText("")
+                yearPublished.setText("")
+                designers.setText("")
+                artists.setText("")
+                description.setText("")
+                orderDate.setText("")
+                price.setText("")
+                sdc.setText("")
+                eanUpc.setText("")
+                productCode.setText("")
+                rank.setText("")
+                comment.setText("")
+                Toast.makeText(this, getString(R.string.add_success_msg), Toast.LENGTH_SHORT).show()
+            } catch (e: SQLiteConstraintException) {
+                Toast.makeText(this, getString(R.string.game_exists_msg), Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     fun cancel(v: View){
+        Log.v(TAG, getString(R.string.log_end))
         setResult(1)
         this.finish()
+    }
+
+    private fun necessaryFilled(): Boolean{
+        val result: Boolean
+        when {
+            title.text.isEmpty() -> {
+                Toast.makeText(this,
+                        getString(R.string.fill_field_msg, getString(R.string.game_title_lbl)),
+                        Toast.LENGTH_SHORT).show()
+                result =  false
+            }
+            orgTitle.text.isEmpty() -> {
+                Toast.makeText(this,
+                        getString(R.string.fill_field_msg, getString(R.string.game_org_title_lbl)),
+                        Toast.LENGTH_SHORT).show()
+                result =  false
+            }
+            yearPublished.text.isEmpty() -> {
+                Toast.makeText(this,
+                        getString(R.string.fill_field_msg, getString(R.string.year_published_lbl)),
+                        Toast.LENGTH_SHORT).show()
+                result =  false
+            }
+            designers.text.isEmpty() -> {
+                Toast.makeText(this,
+                        getString(R.string.fill_field_msg, getString(R.string.designers_lbl)),
+                        Toast.LENGTH_SHORT).show()
+                result =  false
+            }
+            artists.text.isEmpty() -> {
+                Toast.makeText(this,
+                        getString(R.string.fill_field_msg, getString(R.string.artists_lbl)),
+                        Toast.LENGTH_SHORT).show()
+                result =  false
+            }
+            else -> result =  true
+        }
+        return result
+    }
+
+    private fun datesFormatCorrect(): Boolean{
+        if (orderDate.text.isEmpty()){
+            Toast.makeText(this, getString(R.string.fill_field_msg,
+                    getString(R.string.order_date_lbl)),
+                    Toast.LENGTH_SHORT).show()
+            return false
+        }
+        return try {
+            LocalDate.parse(orderDate.text.toString(), DateTimeFormatter.ISO_LOCAL_DATE)
+            true
+        } catch (e: DateTimeParseException){
+            Toast.makeText(this,
+                    getString(R.string.date_format_msg, getString(R.string.date_format)),
+                    Toast.LENGTH_LONG).show()
+            false
+        }
     }
 
 }

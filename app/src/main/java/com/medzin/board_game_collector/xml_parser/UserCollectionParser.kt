@@ -1,18 +1,15 @@
 package com.medzin.board_game_collector.xml_parser
 
 import android.content.Context
-import android.graphics.BitmapFactory
+import androidx.core.text.isDigitsOnly
 import com.medzin.board_game_collector.R
 import com.medzin.board_game_collector.database.objects.Game
-import com.medzin.board_game_collector.database.objects.Person
 import com.medzin.board_game_collector.exceptions.ResultNotReadyException
-import com.medzin.board_game_collector.util.GameType
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import java.io.File
-import java.net.URL
 import javax.xml.parsers.DocumentBuilderFactory
 
 class UserCollectionParser {
@@ -58,6 +55,23 @@ class UserCollectionParser {
                                             }
                                             "comment" -> {
                                                 game.comment = node.textContent
+                                            }
+                                            "stats" -> {
+                                                val ranks = (node.getElementsByTagName("rating")
+                                                        .item(0) as Element).getElementsByTagName("ranks")
+                                                        .item(0).childNodes
+                                                for (k in 0 until ranks.length) {
+                                                    val rank = ranks.item(k)
+                                                    if (rank is Element && rank.nodeName == "rank" &&
+                                                            rank.getAttribute("name") ==
+                                                            "boardgame"
+                                                    ) {
+                                                        if (rank.getAttribute("value")
+                                                                        .isDigitsOnly()
+                                                        ) game.currRank =
+                                                                rank.getAttribute("value").toInt()
+                                                    }
+                                                }
                                             }
                                         }
                                     }
